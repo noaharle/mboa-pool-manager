@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f3eb">
+  <title>Mboa Circle | Savings pools</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #202a28;
+      --muted: #727b74;
+      --paper: #f6f3eb;
+      --surface: #fffefa;
+      --line: #e6e2d7;
+      --green: #245c49;
+      --green-dark: #193e33;
+      --orange: #e8763d;
+      --gold: #efc766;
+      --red: #b94a3c;
+      --shadow: 0 14px 40px rgba(32, 42, 40, .07);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background-color: var(--paper);
+      background-image: linear-gradient(90deg, rgba(36,92,73,.025) 1px, transparent 1px), linear-gradient(rgba(36,92,73,.025) 1px, transparent 1px);
+      background-size: 32px 32px;
+      color: var(--ink);
+      font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+      font-size: 14px;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .shell { max-width: 1440px; margin: auto; padding: 0 44px 56px; }
+    .topbar { height: 82px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+    .brand { display: flex; align-items: center; gap: 12px; color: var(--ink); text-decoration: none; }
+    .brand-mark { width: 38px; height: 38px; display: grid; place-items: center; background: var(--green); color: var(--gold); border-radius: 12px 12px 12px 3px; font-family: Georgia, serif; font-weight: 700; font-size: 19px; }
+    .brand-name { font-family: Georgia, serif; font-size: 21px; letter-spacing: 0; }
+    .brand-name span { color: var(--green); }
+    .top-actions { display: flex; gap: 12px; align-items: center; }
+    .mode-label { color: var(--muted); font-size: 12px; }
+    .mode-select { border: 1px solid var(--line); background: var(--surface); padding: 10px 34px 10px 12px; border-radius: 7px; color: var(--ink); }
+    .button { border: 0; border-radius: 6px; padding: 11px 15px; font-weight: 700; transition: background .16s ease, transform .16s ease; }
+    .button:hover { transform: translateY(-1px); }
+    .button-primary { background: var(--green); color: white; }
+    .button-primary:hover { background: var(--green-dark); }
+    .button-quiet { background: #edf1eb; color: var(--green-dark); }
+    .button-quiet:hover { background: #e1e9e0; }
+    .button-outline { border: 1px solid var(--line); background: transparent; color: var(--ink); }
+    .icon-button { padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
+    .intro { padding: 32px 0 23px; display: flex; justify-content: space-between; align-items: end; gap: 20px; }
+    .eyebrow { color: var(--orange); font-size: 10px; text-transform: uppercase; letter-spacing: 1.4px; font-weight: 800; }
+    h1 { margin: 7px 0 5px; font-family: Georgia, "Times New Roman", serif; letter-spacing: 0; font-size: 36px; line-height: 1.1; font-weight: 500; }
+    .intro p { color: var(--muted); margin: 0; }
+    .cycle-tag { display: flex; gap: 8px; align-items: center; color: var(--green); background: #e8eee7; border-radius: 5px; padding: 9px 12px; font-size: 12px; font-weight: 700; }
+    .dot { width: 7px; height: 7px; background: #5da477; border-radius: 50%; box-shadow: 0 0 0 4px rgba(93,164,119,.14); }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 22px; align-items: start; }
+    .main-column { min-width: 0; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px; margin-bottom: 20px; }
+    .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; min-height: 102px; }
+    .stat-label { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .3px; }
+    .stat-value { display: block; margin-top: 8px; font-family: Georgia, serif; font-size: 27px; letter-spacing: 0; }
+    .stat-note { color: var(--muted); font-size: 11px; margin-top: 3px; }
+    .pool-panel, .member-panel, .side-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+    .pool-panel { padding: 20px; margin-bottom: 18px; }
+    .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 15px; }
+    .section-heading h2 { margin: 0; font-family: Georgia, serif; font-weight: 500; letter-spacing: 0; font-size: 20px; }
+    .section-heading p { color: var(--muted); font-size: 12px; margin: 5px 0 0; }
+    .pool-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 11px; margin-top: 17px; }
+    .pool-card { position: relative; text-align: left; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); padding: 14px; color: var(--ink); min-width: 0; transition: border-color .15s, box-shadow .15s, transform .15s; }
+    .pool-card:hover { transform: translateY(-2px); border-color: #9eb4a3; }
+    .pool-card.selected { border: 2px solid var(--green); padding: 13px; box-shadow: 0 0 0 3px rgba(36,92,73,.08); }
+    .pool-card .amount { display: block; font-family: Georgia, serif; font-size: 22px; white-space: nowrap; }
+    .pool-card .cycle { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
+    .pool-card .pool-progress { height: 5px; background: #e9e8e0; border-radius: 9px; margin: 13px 0 7px; overflow: hidden; }
+      .pool-card .pool-progress { display: block; width: 100%; height: 5px; background: #e9e8e0; border-radius: 9px; margin: 13px 0 7px; overflow: hidden; }
+    .pool-card .pool-progress span { height: 100%; display: block; background: var(--orange); border-radius: inherit; }
+    .pool-card .members { color: var(--muted); font-size: 10px; }
+    .pool-card .check { position: absolute; right: 12px; top: 12px; width: 17px; height: 17px; border-radius: 50%; background: var(--green); color: white; display: none; place-items: center; font-size: 11px; }
+    .pool-card.selected .check { display: grid; }
+    .member-panel { overflow: hidden; }
+    .member-head { padding: 17px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); }
+    .member-head h2 { margin: 0; font-family: Georgia, serif; font-size: 20px; font-weight: 500; letter-spacing: 0; }
+    .member-head .sub { margin-top: 4px; color: var(--muted); font-size: 11px; }
+    .table-wrap { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; text-align: left; }
+    th { color: var(--muted); background: #faf9f5; font-size: 10px; text-transform: uppercase; letter-spacing: .7px; font-weight: 800; }
+    th, td { padding: 12px 17px; border-bottom: 1px solid #efede6; white-space: nowrap; }
+    td { font-size: 12px; }
+    tbody tr:last-child td { border-bottom: 0; }
+    .person { display: flex; gap: 9px; align-items: center; }
+    .avatar { width: 31px; height: 31px; border-radius: 50%; display: grid; place-items: center; flex: 0 0 auto; color: #fff; background: var(--avatar, #527560); font-size: 10px; font-weight: 800; }
+      .avatar { width: 31px; height: 31px; border-radius: 50%; display: grid; place-items: center; flex: 0 0 auto; overflow: hidden; color: #fff; background: var(--avatar, #527560); font-size: 10px; font-weight: 800; }
+      .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .person-name { font-weight: 700; }
+    .person-you { color: var(--orange); font-size: 9px; font-weight: 800; margin-left: 4px; }
+    .person-sub { color: var(--muted); font-size: 10px; margin-top: 3px; }
+    .status { display: inline-flex; align-items: center; gap: 5px; border-radius: 4px; padding: 5px 7px; background: #eaf3ec; color: #397750; font-size: 10px; font-weight: 800; }
+    .status.pending { background: #fff2df; color: #9b691e; }
+    .status.late { background: #fbe9e5; color: var(--red); }
+    .text-button { border: 0; background: none; color: var(--green); font-size: 11px; font-weight: 800; padding: 4px; }
+    .admin-private { color: var(--muted); font-size: 10px; }
+    .side-panel { padding: 18px; margin-bottom: 14px; }
+    .side-panel h3 { font-family: Georgia, serif; font-weight: 500; letter-spacing: 0; font-size: 17px; margin: 0 0 13px; }
+    .countdown-box { border-radius: 6px; background: var(--green-dark); color: white; padding: 15px; position: relative; overflow: hidden; }
+    .countdown-box:after { content: ""; position: absolute; width: 95px; height: 95px; border: 1px solid rgba(239,199,102,.36); border-radius: 50%; right: -25px; top: -38px; box-shadow: 0 0 0 10px rgba(239,199,102,.06), 0 0 0 20px rgba(239,199,102,.04); }
+    .count-label { color: #c6d6c9; font-size: 10px; font-weight: 700; }
+    .count-time { font-family: Georgia, serif; font-size: 25px; margin: 6px 0 3px; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+    .count-date { color: #c6d6c9; font-size: 10px; }
+    .progress-head { display: flex; justify-content: space-between; font-size: 10px; margin: 15px 0 7px; }
+    .progress-head span:last-child { color: var(--muted); }
+    .progress-track { height: 6px; border-radius: 9px; background: #e9e8e0; overflow: hidden; }
+    .progress-track span { display: block; width: 0; height: 100%; background: var(--orange); }
+    .payout-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 11px; }
+    .payout-row:last-child { border-bottom: 0; padding-bottom: 0; }
+    .payout-row .muted { color: var(--muted); }
+    .payout-row strong { text-align: right; }
+    .payment-options { display: grid; gap: 8px; }
+    .payment-option { display: flex; align-items: center; gap: 10px; padding: 9px 10px; background: #faf9f5; border: 1px solid #efede6; border-radius: 5px; font-size: 11px; }
+    .payment-icon { width: 25px; height: 25px; border-radius: 5px; background: #fbe5da; color: #a64c27; display: grid; place-items: center; font-size: 10px; font-weight: 900; }
+    .payment-option:nth-child(2) .payment-icon { background: #fff0c7; color: #77601a; }
+    .payment-option:nth-child(3) .payment-icon { background: #e6ece8; color: var(--green); }
+    .payment-detail { display: block; margin-top: 3px; color: var(--muted); font-size: 9px; }
+    .fine-print { color: var(--muted); font-size: 10px; line-height: 1.5; margin: 13px 0 0; }
+    .late-note { display: flex; align-items: flex-start; gap: 9px; padding: 10px; border-radius: 5px; background: #fff3e8; color: #885224; font-size: 10px; line-height: 1.5; }
+    .late-note b { font-size: 14px; line-height: 1; }
+    .admin-settings { margin-top: 14px; }
+    .admin-settings label { display: block; font-size: 10px; font-weight: 700; color: var(--muted); margin: 11px 0 5px; }
+    .field { width: 100%; border: 1px solid var(--line); border-radius: 5px; padding: 10px 11px; background: white; color: var(--ink); outline: none; }
+    .field:focus { border-color: var(--green); box-shadow: 0 0 0 2px rgba(36,92,73,.11); }
+    .admin-note { margin-top: 9px; color: var(--muted); font-size: 9px; line-height: 1.5; }
+    .toast { position: fixed; z-index: 20; bottom: 22px; left: 50%; transform: translate(-50%, 15px); opacity: 0; pointer-events: none; color: white; background: var(--green-dark); padding: 12px 17px; border-radius: 6px; box-shadow: var(--shadow); transition: .2s ease; font-size: 12px; }
+    .toast.show { transform: translate(-50%, 0); opacity: 1; }
+    .modal-backdrop { position: fixed; inset: 0; z-index: 10; background: rgba(25, 38, 33, .45); display: none; place-items: center; padding: 16px; }
+    .modal-backdrop.open { display: grid; }
+    .modal { width: min(460px, 100%); background: var(--surface); border-radius: 8px; box-shadow: 0 24px 80px rgba(0,0,0,.2); padding: 22px; max-height: 90vh; overflow-y: auto; animation: appear .2s ease-out; }
+    @keyframes appear { from { opacity: 0; transform: translateY(8px) scale(.99); } to { opacity: 1; transform: none; } }
+    .modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 17px; }
+    .modal h2 { font-family: Georgia, serif; font-size: 23px; letter-spacing: 0; font-weight: 500; margin: 0; }
+    .modal p { color: var(--muted); font-size: 11px; line-height: 1.5; margin: 5px 0 0; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 11px; }
+    .form-grid .full { grid-column: 1 / -1; }
+    .field-label { display: block; font-size: 10px; font-weight: 800; margin: 12px 0 6px; }
+    .fee-summary { display: flex; justify-content: space-between; background: #f4f2eb; border-radius: 5px; padding: 12px; margin-top: 14px; font-size: 11px; }
+    .fee-summary strong { text-align: right; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+    .empty { color: var(--muted); padding: 28px; text-align: center; font-size: 12px; }
+    @media (max-width: 1050px) {
+      .shell { padding: 0 24px 40px; }
+      .layout { grid-template-columns: minmax(0, 1fr) 290px; gap: 15px; }
+      .pool-panel { padding: 16px; }
+      th, td { padding: 11px 12px; }
+    }
+    @media (max-width: 800px) {
+      .layout { grid-template-columns: 1fr; }
+      .aside { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .side-panel { margin: 0; }
+      .side-panel:first-child { grid-row: span 2; }
+    }
+    @media (max-width: 570px) {
+      .shell { padding: 0 14px 28px; }
+      .topbar { height: auto; min-height: 68px; flex-wrap: wrap; padding: 10px 0; gap: 9px; }
+      .brand-name { font-size: 18px; }
+      .brand-mark { width: 34px; height: 34px; }
+      .mode-label { display: none; }
+      .mode-select { flex: 1; min-width: 0; max-width: none; padding: 9px 20px 9px 8px; font-size: 11px; }
+      .top-actions { width: 100%; gap: 6px; flex-wrap: wrap; }
+      #joinButton { flex: 1 0 100%; padding: 9px 10px; font-size: 11px; }
+      .intro { padding: 24px 0 18px; align-items: flex-start; }
+      h1 { font-size: 29px; }
+      .intro p { font-size: 11px; max-width: 235px; line-height: 1.5; }
+      .cycle-tag { font-size: 0; padding: 10px; margin-top: 17px; }
+      .cycle-tag .dot { margin-right: 1px; }
+      .stats { gap: 7px; }
+      .stat { padding: 12px 10px; min-height: 84px; }
+      .stat-label { font-size: 9px; }
+      .stat-value { font-size: 20px; margin-top: 10px; }
+      .stat-note { font-size: 9px; }
+      .pool-cards { gap: 7px; }
+      .pool-card { padding: 10px; }
+      .pool-card.selected { padding: 9px; }
+      .pool-card .amount { font-size: 18px; }
+      .pool-card .cycle { font-size: 9px; }
+      .pool-card .members { font-size: 9px; }
+      .section-heading h2, .member-head h2 { font-size: 18px; }
+      .member-head { padding: 14px; }
+      .member-head .button { padding: 9px 10px; font-size: 10px; }
+      .aside { grid-template-columns: 1fr; }
+      .side-panel:first-child { grid-row: auto; }
+      .table-wrap table { min-width: 620px; }
+      .admin-private { white-space: normal; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Mboa Circle home">
+        <span class="brand-mark">M</span>
+        <span class="brand-name">mboa <span>circle</span></span>
+      </a>
+      <div class="top-actions">
+        <span class="mode-label">Viewing as</span>
+        <select id="modeSelect" class="mode-select" aria-label="Choose view">
+          <option value="member">Member</option>
+          <option value="admin">Admin</option>
+        </select>
+        <select id="countrySelect" class="mode-select" aria-label="Country">
+          <option value="CM">Cameroon</option>
+          <option value="US">United States</option>
+          <option value="FR">France</option>
+          <option value="CA">Canada</option>
+        </select>
+        <select id="languageSelect" class="mode-select" aria-label="Language">
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+        </select>
+        <button id="joinButton" class="button button-primary">Join this pool</button>
+      </div>
+    </header>
+
+    <section class="intro">
+      <div>
+        <div class="eyebrow">Community savings · Cameroon</div>
+        <h1>Small circles. Shared progress.</h1>
+        <p>Contribute together, take turns, and keep every cycle clear.</p>
+      </div>
+      <div class="cycle-tag"><span class="dot"></span><span id="cycleStatus">Cycle in progress</span></div>
+    </section>
+
+    <div class="layout">
+      <main class="main-column">
+        <section class="stats" aria-label="Pool summary">
+          <div class="stat"><div class="stat-label">COLLECTED THIS CYCLE</div><strong id="collectedStat" class="stat-value">0 XAF</strong><div id="contributionStat" class="stat-note">0 contributions confirmed</div></div>
+          <div class="stat"><div class="stat-label">POOL MEMBERS</div><strong id="memberStat" class="stat-value">0 / 100</strong><div class="stat-note">Maximum 100 members</div></div>
+          <div class="stat"><div class="stat-label">NEXT PAYOUT</div><strong id="payoutStat" class="stat-value">0 XAF</strong><div id="recipientStat" class="stat-note">Split between 1 member</div></div>
+        </section>
+
+        <section class="pool-panel">
+          <div class="section-heading">
+            <div><h2>Choose your circle</h2><p>Select the amount and contribution rhythm that works for you.</p></div>
+            <button id="createPoolButton" class="button button-quiet" hidden>+ New pool</button>
+          </div>
+          <div id="poolCards" class="pool-cards"></div>
+        </section>
+
+        <section class="member-panel">
+          <div class="member-head">
+            <div><h2>Circle members</h2><div id="memberSubtitle" class="sub">Confirmed contributions for this cycle</div></div>
+            <button id="depositButton" class="button button-primary">Make a deposit</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead id="memberTableHead"></thead>
+              <tbody id="memberTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+
+      <aside class="aside">
+        <section class="side-panel">
+          <h3>Cycle closing</h3>
+          <div class="countdown-box">
+            <div class="count-label">TIME LEFT TO CONTRIBUTE</div>
+            <div id="countdown" class="count-time">--d --h --m</div>
+            <div id="countDate" class="count-date">Loading closing date</div>
+          </div>
+          <div class="progress-head"><strong>Cycle contributions</strong><span id="progressText">0%</span></div>
+          <div class="progress-track"><span id="progressBar"></span></div>
+          <div class="payout-row"><span class="muted">Contribution</span><strong id="contributionAmount">0 XAF / cycle</strong></div>
+          <div class="payout-row"><span class="muted">Frequency</span><strong id="frequencyLabel">Weekly</strong></div>
+          <div class="payout-row"><span class="muted">Payout recipients</span><strong id="recipientLabel">1 member</strong></div>
+        </section>
+
+        <section class="side-panel">
+          <h3>Ways to contribute</h3>
+          <div id="paymentOptions" class="payment-options"></div>
+          <p class="fine-print">Transfer to the pool organizer using your payment reference. Contributions appear in the total after admin confirmation.</p>
+        </section>
+
+        <section class="side-panel">
+          <h3>On-time contributions</h3>
+          <div class="late-note"><b>!</b><span>Payments received after cycle close include a <strong>3% late fee</strong>, added to your contribution.</span></div>
+          <div id="adminSettings" class="admin-settings" hidden>
+            <label for="adminOrange">Orange Money number</label><input id="adminOrange" class="field account-field" data-key="orange" placeholder="Enter recipient number">
+            <label for="adminMtn">MTN MoMo number</label><input id="adminMtn" class="field account-field" data-key="mtn" placeholder="Enter recipient number">
+            <label for="adminBank">Bank account details</label><input id="adminBank" class="field account-field" data-key="bank" placeholder="Bank and account number">
+            <div class="admin-note">Demo admin settings are saved only in this browser. Real app access controls and server-side privacy are required before launch.</div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <form id="actionForm" class="modal">
+      <div class="modal-head">
+        <div><h2 id="modalTitle">Make a deposit</h2><p id="modalDescription">Choose a payment method and confirm your contribution.</p></div>
+        <button type="button" class="icon-button" id="closeModal" aria-label="Close">×</button>
+      </div>
+      <div id="formFields"></div>
+      <div id="feeSummary" class="fee-summary"></div>
+      <div class="modal-actions"><button type="button" id="cancelModal" class="button button-outline">Cancel</button><button type="submit" id="submitAction" class="button button-primary">Confirm deposit</button></div>
+    </form>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      const STORAGE_KEY = 'mboa-circle-prototype-v1';
+      const colors = ['#49715b', '#a85b3e', '#687c8b', '#b17b35', '#765a76', '#4b827c'];
+      const now = Date.now();
+      const defaultState = {
+        selectedPool: 'weekly-5000',
+        mode: 'member',
+        country: 'CM',
+        currentUserId: 'u1',
+        accounts: { orange: '', mtn: '', bank: '' },
+        pools: [
+          { id: 'weekly-5000', amount: 5000, frequency: 'Weekly', duration: 7, recipients: 1, closeAt: now + 4 * 86400000, members: [
+            { id: 'u1', name: 'You', phone: '670 123 456', nationalId: 'CM-19884201', paid: true, payment: 'Orange Money' },
+            { id: 'u2', name: 'Amina N.', phone: '677 234 567', nationalId: 'CM-20437518', paid: true, payment: 'MTN MoMo' },
+            { id: 'u3', name: 'Samuel T.', phone: '699 345 678', nationalId: 'CM-19361504', paid: false, payment: '' },
+            { id: 'u4', name: 'Nadine F.', phone: '655 456 789', nationalId: 'CM-20772839', paid: true, payment: 'Cash deposit' },
+            { id: 'u5', name: 'Emmanuel K.', phone: '680 567 890', nationalId: 'CM-19140852', paid: false, payment: '' },
+            { id: 'u6', name: 'Grace M.', phone: '671 678 901', nationalId: 'CM-20192743', paid: true, payment: 'MTN MoMo' }
+          ] },
+          { id: 'biweekly-10000', amount: 10000, frequency: 'Every 2 weeks', duration: 14, recipients: 1, closeAt: now + 9 * 86400000, members: [
+            { id: 'u7', name: 'Boris E.', phone: '690 456 321', nationalId: 'CM-18840917', paid: true, payment: 'Orange Money' },
+            { id: 'u8', name: 'Mireille D.', phone: '675 321 098', nationalId: 'CM-20453627', paid: true, payment: 'MTN MoMo' },
+            { id: 'u9', name: 'David A.', phone: '653 789 012', nationalId: 'CM-19573819', paid: false, payment: '' },
+            { id: 'u10', name: 'Chantal P.', phone: '699 210 345', nationalId: 'CM-20731648', paid: true, payment: 'Cash deposit' }
+          ] },
+          { id: 'monthly-25000', amount: 25000, frequency: 'Monthly', duration: 30, recipients: 2, closeAt: now + 17 * 86400000, members: [
+            { id: 'u11', name: 'Esther L.', phone: '670 987 654', nationalId: 'CM-19935827', paid: true, payment: 'MTN MoMo' },
+            { id: 'u12', name: 'Patrick B.', phone: '677 876 543', nationalId: 'CM-20584931', paid: true, payment: 'Orange Money' },
+            { id: 'u13', name: 'Solange W.', phone: '655 765 432', nationalId: 'CM-19247015', paid: false, payment: '' }
+          ] }
+        ]
+      };
+      let state;
+      try { state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultState; } catch { state = defaultState; }
+      state.language = state.language === 'fr' ? 'fr' : 'en';
+      state.country = ['CM', 'US', 'FR', 'CA'].includes(state.country) ? state.country : 'CM';
+      const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      const $ = (selector) => document.querySelector(selector);
+      const translations = {
+        en: {
+          pageTitle: 'Mboa Circle | Savings pools', poolSummary: 'Pool summary', language: 'Language', country: 'Country',
+          countryCM: 'Cameroon', countryUS: 'United States', countryFR: 'France', countryCA: 'Canada', paymentDemo: 'Demo only · not connected',
+          zelle: 'Zelle', cashApp: 'Cash App', applePay: 'Apple Pay', paypal: 'PayPal', venmo: 'Venmo', card: 'Debit / credit card',
+          bankTransfer: 'Bank transfer', interac: 'Interac e-Transfer', dayUnit: 'd', hourUnit: 'h', minuteUnit: 'm',
+          viewingAs: 'Viewing as', chooseView: 'Choose view', member: 'Member', admin: 'Admin', joinPool: 'Join this pool',
+          eyebrow: 'Community savings · Cameroon', headline: 'Small circles. Shared progress.', intro: 'Contribute together, take turns, and keep every cycle clear.',
+          inProgress: 'Cycle in progress', closed: 'Cycle closed', collected: 'COLLECTED THIS CYCLE', poolMembers: 'POOL MEMBERS', nextPayout: 'NEXT PAYOUT',
+          maxMembers: 'Maximum {count} members', confirmedCount: '{count} contributions confirmed', splitBetween: 'Split between {count} {memberWord}',
+          chooseCircle: 'Choose your circle', chooseCircleHint: 'Select the amount and contribution rhythm that works for you.', newPool: '+ New pool',
+          circleMembers: 'Circle members', confirmedForCycle: 'Confirmed contributions for this cycle', memberPrivacy: 'Names and contribution status · private details hidden', adminPrivacy: 'Admin view · private contact details visible', makeDeposit: 'Make a deposit',
+          memberCol: 'Member', phoneCol: 'Phone', idCol: 'ID number', contributionCol: 'Contribution', paymentCol: 'Payment', adminCol: 'Admin', you: 'YOU', memberRole: 'Member',
+          confirmed: 'Confirmed', awaiting: 'Awaiting confirmation', late: 'Late · +3%', due: 'Due', verified: 'Verified', confirm: 'Confirm', noMembers: 'No members in this circle yet. Be the first to join.',
+          cycleClosing: 'Cycle closing', timeLeft: 'TIME LEFT TO CONTRIBUTE', closes: 'Closes {date}', cycleContributions: 'Cycle contributions', contribution: 'Contribution', frequency: 'Frequency', recipients: 'Payout recipients',
+          waysToContribute: 'Ways to contribute', notConfigured: 'Account not configured', transferInfo: 'Transfer to the pool organizer using your payment reference. Contributions appear in the total after admin confirmation.',
+          onTime: 'On-time contributions', lateInfo: 'Payments received after cycle close include a 3% late fee, added to your contribution.',
+          orangeNumber: 'Orange Money number', mtnNumber: 'MTN MoMo number', bankDetails: 'Bank account details', recipientNumber: 'Enter recipient number', bankAccountPlaceholder: 'Bank and account number',
+          demoAdminNote: 'Demo admin settings are saved only in this browser. Real app access controls and server-side privacy are required before launch.',
+          makeDepositTitle: 'Make a deposit', depositDescription: 'Select your payment method and service fee. Your deposit is pending until confirmed.',
+          joinTitle: 'Join this circle', joinDescription: 'Your name is public to members. Contact and ID details are admin-only.', createTitle: 'Create a pool', createDescription: 'Set the contribution amount, frequency, and payout split.',
+          choosePayment: 'Payment method', adminFee: 'Admin fee · XAF', noFee: 'No fee · 0 XAF', paymentReference: 'Payment reference (optional)', referencePlaceholder: 'Transaction ID or deposit slip ref',
+          contributionAmount: 'Contribution amount (XAF)', frequencyLabel: 'Frequency', payoutRecipients: 'Payout recipients', memberLimit: 'Member limit (max 100)', setup: 'Pool setup', noSetupFee: 'No setup fee',
+          displayName: 'Display name', displayNamePlaceholder: 'Name members will see', profilePicture: 'Profile picture', phoneAdminOnly: 'Phone number · admin only', phonePlaceholder: '6XX XXX XXX', nationalIdAdminOnly: 'National ID · admin only', idPlaceholder: 'ID number',
+          cancel: 'Cancel', confirmDeposit: 'Confirm deposit', submitDeposit: 'Submit deposit', joinCircle: 'Join circle', createPool: 'Create pool', close: 'Close',
+          weekly: 'Weekly', biweekly: 'Every 2 weeks', monthly: 'Monthly', eachWeek: 'each week', everyTwoWeeks: 'every 2 weeks', eachMonth: 'each month',
+          orangeMoney: 'Orange Money', mtnMomo: 'MTN MoMo', cashDeposit: 'Cash deposit', bankCash: 'Bank / cash deposit',
+          joinFirst: 'Join this circle before making a deposit.', alreadyPaid: 'Your contribution is already confirmed for this cycle.',
+          fullPool: 'This circle has reached its {count}-member limit.', alreadyMember: 'You are already a member of this circle.',
+          chooseSmallPicture: 'Choose a picture smaller than 1 MB.', joined: 'You joined the circle. Make your first deposit when ready.',
+          checkPool: 'Check the amount and member limit.', poolCreated: 'Pool created. Members can now join.', noUnpaid: 'No unpaid contribution found for this cycle.',
+          depositPending: 'Deposit submitted for admin confirmation.', contributionConfirmed: 'Contribution marked as confirmed.',
+          accountsSaved: 'Recipient account details saved on this device.'
+        },
+        fr: {
+          pageTitle: 'Mboa Circle | Tontines', poolSummary: 'Résumé de la tontine', language: 'Langue', country: 'Pays',
+          countryCM: 'Cameroun', countryUS: 'États-Unis', countryFR: 'France', countryCA: 'Canada', paymentDemo: 'Démo uniquement · non connecté',
+          zelle: 'Zelle', cashApp: 'Cash App', applePay: 'Apple Pay', paypal: 'PayPal', venmo: 'Venmo', card: 'Carte de débit / crédit',
+          bankTransfer: 'Virement bancaire', interac: 'Virement Interac', dayUnit: 'j', hourUnit: 'h', minuteUnit: 'min',
+          viewingAs: 'Vue', chooseView: 'Choisir la vue', member: 'Membre', admin: 'Admin', joinPool: 'Rejoindre cette tontine',
+          eyebrow: 'Épargne communautaire · Cameroun', headline: 'Ensemble, faisons grandir la tontine.', intro: 'Cotisez ensemble, recevez à tour de rôle et suivez chaque cycle.',
+          inProgress: 'Cycle en cours', closed: 'Cycle clôturé', collected: 'TOTAL COLLECTÉ CE CYCLE', poolMembers: 'MEMBRES', nextPayout: 'PROCHAIN VERSEMENT',
+          maxMembers: 'Maximum : {count} membres', confirmedCount: '{count} cotisations confirmées', splitBetween: 'Réparti entre {count} {memberWord}',
+          chooseCircle: 'Choisissez votre tontine', chooseCircleHint: 'Choisissez le montant et la fréquence de cotisation qui vous conviennent.', newPool: '+ Nouvelle tontine',
+          circleMembers: 'Membres de la tontine', confirmedForCycle: 'Cotisations confirmées pour ce cycle', memberPrivacy: 'Noms et statut des cotisations · coordonnées privées masquées', adminPrivacy: 'Vue admin · coordonnées privées visibles', makeDeposit: 'Cotiser',
+          memberCol: 'Membre', phoneCol: 'Téléphone', idCol: 'N° de pièce', contributionCol: 'Cotisation', paymentCol: 'Paiement', adminCol: 'Admin', you: 'VOUS', memberRole: 'Membre',
+          confirmed: 'Confirmé', awaiting: 'En attente de validation', late: 'En retard · +3 %', due: 'À payer', verified: 'Vérifié', confirm: 'Valider', noMembers: 'Aucun membre dans cette tontine. Soyez le premier à la rejoindre.',
+          cycleClosing: 'Clôture du cycle', timeLeft: 'TEMPS RESTANT POUR COTISER', closes: 'Clôture : {date}', cycleContributions: 'Cotisations du cycle', contribution: 'Cotisation', frequency: 'Fréquence', recipients: 'Bénéficiaires',
+          waysToContribute: 'Moyens de cotisation', notConfigured: 'Compte non configuré', transferInfo: 'Transférez la somme à l’organisateur avec votre référence de paiement. La cotisation est ajoutée au total après validation par l’admin.',
+          onTime: 'Cotisations à temps', lateInfo: 'Après la clôture du cycle, des frais de retard de 3 % sont ajoutés à votre cotisation.',
+          orangeNumber: 'Numéro Orange Money', mtnNumber: 'Numéro MTN MoMo', bankDetails: 'Coordonnées bancaires', recipientNumber: 'Saisir le numéro du bénéficiaire', bankAccountPlaceholder: 'Banque et numéro de compte',
+          demoAdminNote: 'Les réglages admin de démonstration sont enregistrés dans ce navigateur uniquement. Une vraie application doit sécuriser les accès et les données sur un serveur.',
+          makeDepositTitle: 'Effectuer une cotisation', depositDescription: 'Choisissez le moyen de paiement et les frais de service. Votre cotisation attend la validation de l’admin.',
+          joinTitle: 'Rejoindre cette tontine', joinDescription: 'Votre nom est visible par les membres. Votre téléphone et votre pièce d’identité sont réservés à l’admin.', createTitle: 'Créer une tontine', createDescription: 'Définissez le montant, la fréquence et le partage des versements.',
+          choosePayment: 'Moyen de paiement', adminFee: 'Frais admin · XAF', noFee: 'Sans frais · 0 XAF', paymentReference: 'Référence de paiement (facultatif)', referencePlaceholder: 'ID de transaction ou référence du dépôt',
+          contributionAmount: 'Montant de cotisation (XAF)', frequencyLabel: 'Fréquence', payoutRecipients: 'Bénéficiaires', memberLimit: 'Limite de membres (max. 100)', setup: 'Création de tontine', noSetupFee: 'Aucun frais de création',
+          displayName: 'Nom affiché', displayNamePlaceholder: 'Nom visible par les membres', profilePicture: 'Photo de profil', phoneAdminOnly: 'Téléphone · réservé à l’admin', phonePlaceholder: '6XX XXX XXX', nationalIdAdminOnly: 'Pièce d’identité · réservée à l’admin', idPlaceholder: 'Numéro de pièce',
+          cancel: 'Annuler', confirmDeposit: 'Confirmer la cotisation', submitDeposit: 'Envoyer la cotisation', joinCircle: 'Rejoindre', createPool: 'Créer la tontine', close: 'Fermer',
+          weekly: 'Chaque semaine', biweekly: 'Toutes les 2 semaines', monthly: 'Chaque mois', eachWeek: 'semaine', everyTwoWeeks: '2 semaines', eachMonth: 'mois',
+          orangeMoney: 'Orange Money', mtnMomo: 'MTN MoMo', cashDeposit: 'Dépôt en espèces', bankCash: 'Banque / dépôt en espèces',
+          joinFirst: 'Rejoignez cette tontine avant de cotiser.', alreadyPaid: 'Votre cotisation pour ce cycle est déjà confirmée.',
+          fullPool: 'Cette tontine a atteint sa limite de {count} membres.', alreadyMember: 'Vous êtes déjà membre de cette tontine.',
+          chooseSmallPicture: 'Choisissez une photo de moins de 1 Mo.', joined: 'Vous avez rejoint la tontine. Vous pouvez effectuer votre première cotisation.',
+          checkPool: 'Vérifiez le montant et la limite de membres.', poolCreated: 'Tontine créée. Les membres peuvent la rejoindre.', noUnpaid: 'Aucune cotisation impayée pour ce cycle.',
+          depositPending: 'Cotisation envoyée pour validation par l’admin.', contributionConfirmed: 'Cotisation marquée comme confirmée.',
+          accountsSaved: 'Coordonnées du bénéficiaire enregistrées sur cet appareil.'
+        }
+      };
+      const tr = (key, values = {}) => Object.entries(values).reduce((value, [name, replacement]) => value.replace(`{${name}}`, replacement), translations[state.language]?.[key] || translations.en[key] || key);
+      const localizedFrequency = frequency => ({ Weekly: tr('weekly'), 'Every 2 weeks': tr('biweekly'), Monthly: tr('monthly') })[frequency] || frequency;
+      const localizedPayment = payment => ({
+        'Orange Money': tr('orangeMoney'), 'MTN MoMo': tr('mtnMomo'), 'Cash deposit': tr('cashDeposit'),
+        Zelle: tr('zelle'), 'Cash App': tr('cashApp'), 'Apple Pay': tr('applePay'), PayPal: tr('paypal'), Venmo: tr('venmo'),
+        'Debit / credit card': tr('card'), 'Bank transfer': tr('bankTransfer'), 'Interac e-Transfer': tr('interac')
+      })[payment] || payment;
+      const paymentMethods = {
+        CM: [{ value: 'Orange Money', icon: 'OM' }, { value: 'MTN MoMo', icon: 'M' }, { value: 'Cash deposit', icon: 'B' }],
+        US: [{ value: 'Zelle', icon: 'Z' }, { value: 'Cash App', icon: '$' }, { value: 'Apple Pay', icon: 'AP' }, { value: 'PayPal', icon: 'P' }, { value: 'Venmo', icon: 'V' }, { value: 'Debit / credit card', icon: 'CC' }],
+        FR: [{ value: 'Apple Pay', icon: 'AP' }, { value: 'PayPal', icon: 'P' }, { value: 'Bank transfer', icon: 'B' }, { value: 'Debit / credit card', icon: 'CC' }],
+        CA: [{ value: 'Interac e-Transfer', icon: 'I' }, { value: 'Apple Pay', icon: 'AP' }, { value: 'PayPal', icon: 'P' }, { value: 'Debit / credit card', icon: 'CC' }]
+      };
+      const countryLabel = code => tr(({ CM: 'countryCM', US: 'countryUS', FR: 'countryFR', CA: 'countryCA' })[code]);
+            const applyLanguage = () => {
+              document.documentElement.lang = state.language;
+              document.title = tr('pageTitle');
+              $('#languageSelect').value = state.language;
+              $('#languageSelect').setAttribute('aria-label', tr('language'));
+              $('#countrySelect').value = state.country;
+              $('#countrySelect').setAttribute('aria-label', tr('country'));
+              $('#countrySelect option[value="CM"]').textContent = tr('countryCM');
+              $('#countrySelect option[value="US"]').textContent = tr('countryUS');
+              $('#countrySelect option[value="FR"]').textContent = tr('countryFR');
+              $('#countrySelect option[value="CA"]').textContent = tr('countryCA');
+              $('.stats').setAttribute('aria-label', tr('poolSummary'));
+              const staticCopy = [
+                ['.mode-label', 'viewingAs'], ['h1', 'headline'], ['.eyebrow', 'eyebrow'], ['.intro p', 'intro'],
+                ['.section-heading h2', 'chooseCircle'], ['.section-heading p', 'chooseCircleHint'],
+                ['.member-head h2', 'circleMembers'], ['#depositButton', 'makeDeposit'],
+                ['.count-label', 'timeLeft'], ['.progress-head strong', 'cycleContributions'],
+                ['.payout-row:nth-of-type(1) .muted', 'contribution'], ['.payout-row:nth-of-type(2) .muted', 'frequency'],
+                ['.fine-print', 'transferInfo'],
+                ['.late-note span', 'lateInfo'], ['#adminSettings .admin-note', 'demoAdminNote'],
+                ['#cancelModal', 'cancel']
+              ];
+              for (const [selector, key] of staticCopy) { const element = $(selector); if (element) element.textContent = tr(key); }
+              $('.eyebrow').textContent = `${tr('eyebrow').split(' · ')[0]} · ${countryLabel(state.country)}`;
+              document.querySelectorAll('.stat-label').forEach((element, index) => { element.textContent = tr(['collected', 'poolMembers', 'nextPayout'][index]); });
+              document.querySelectorAll('.side-panel h3').forEach((element, index) => { element.textContent = tr(['cycleClosing', 'waysToContribute', 'onTime'][index]); });
+                document.querySelectorAll('.payout-row .muted').forEach((element, index) => { element.textContent = tr(['contribution', 'frequency', 'recipients'][index]); });
+              document.querySelectorAll('.payment-option strong').forEach((element, index) => { element.textContent = tr(['orangeMoney', 'mtnMomo', 'bankCash'][index]); });
+              document.querySelectorAll('#adminSettings label').forEach((element, index) => { element.textContent = tr(['orangeNumber', 'mtnNumber', 'bankDetails'][index]); });
+              $('#modeSelect').setAttribute('aria-label', tr('chooseView'));
+              $('#modeSelect option[value="member"]').textContent = tr('member');
+              $('#modeSelect option[value="admin"]').textContent = tr('admin');
+              $('#closeModal').setAttribute('aria-label', tr('close'));
+              $('#adminOrange').placeholder = tr('recipientNumber');
+              $('#adminMtn').placeholder = tr('recipientNumber');
+              $('#adminBank').placeholder = tr('bankAccountPlaceholder');
+            };
+      const fmt = (n) => new Intl.NumberFormat('fr-FR').format(n) + ' XAF';
+      const currentPool = () => state.pools.find(pool => pool.id === state.selectedPool) || state.pools[0];
+      const collected = pool => pool.members.filter(member => member.paid).length * pool.amount;
+      const initials = name => name.split(/\s+/).map(part => part[0]).slice(0, 2).join('').toUpperCase();
+      const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+            const readPicture = file => new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = () => reject(new Error('Could not read profile picture.'));
+              reader.readAsDataURL(file);
+            });
+      const setToast = message => {
+        const toast = $('#toast'); toast.textContent = message; toast.classList.add('show');
+        clearTimeout(setToast.timer); setToast.timer = setTimeout(() => toast.classList.remove('show'), 2600);
+      };
+      const render = () => {
+        if (!state.pools.length) return;
+        applyLanguage();
+        const pool = currentPool();
+        const isAdmin = state.mode === 'admin';
+        $('#modeSelect').value = state.mode;
+        $('#joinButton').hidden = isAdmin || pool.members.some(member => member.id === state.currentUserId) || pool.members.length >= (pool.capacity || 100);
+        $('#joinButton').textContent = tr('joinPool');
+        $('#createPoolButton').textContent = tr('newPool');
+        $('#depositButton').textContent = tr('makeDeposit');
+        $('#createPoolButton').hidden = !isAdmin;
+        $('#adminSettings').hidden = !isAdmin || state.country !== 'CM';
+        $('#memberSubtitle').textContent = isAdmin ? tr('adminPrivacy') : tr('memberPrivacy');
+        $('#collectedStat').textContent = fmt(collected(pool));
+        $('#contributionStat').textContent = tr('confirmedCount', { count: pool.members.filter(member => member.paid).length });
+        $('#memberStat').textContent = `${pool.members.length} / ${pool.capacity || 100}`;
+        $('#memberStat').nextElementSibling.textContent = tr('maxMembers', { count: pool.capacity || 100 });
+        const perRecipient = pool.members.length ? Math.floor(pool.amount * pool.members.filter(member => member.paid).length / pool.recipients) : 0;
+        $('#payoutStat').textContent = fmt(perRecipient);
+        $('#recipientStat').textContent = tr('splitBetween', { count: pool.recipients, memberWord: pool.recipients === 1 ? tr('member').toLowerCase() : (state.language === 'fr' ? 'membres' : 'members') });
+        $('#poolCards').innerHTML = state.pools.map(item => {
+          const capacity = item.capacity || 100;
+          const percent = Math.min(100, Math.round(item.members.length / capacity * 100));
+          return `<button type="button" class="pool-card ${item.id === pool.id ? 'selected' : ''}" data-pool="${escapeHtml(item.id)}" aria-pressed="${item.id === pool.id}"><span class="check">✓</span><span class="amount">${fmt(item.amount)}</span><span class="cycle">${escapeHtml(localizedFrequency(item.frequency))}</span><span class="pool-progress"><span style="width:${percent}%"></span></span><span class="members">${item.members.length} / ${capacity} ${tr('member').toLowerCase()}${state.language === 'fr' && capacity !== 1 ? 's' : state.language === 'en' && capacity !== 1 ? 's' : ''}</span></button>`;
+        }).join('');
+        $('#memberTableHead').innerHTML = `<tr><th>${tr('memberCol')}</th>${isAdmin ? `<th>${tr('phoneCol')}</th><th>${tr('idCol')}</th>` : ''}<th>${tr('contributionCol')}</th><th>${tr('paymentCol')}</th>${isAdmin ? `<th>${tr('adminCol')}</th>` : ''}</tr>`;
+        $('#memberTableBody').innerHTML = pool.members.map((member, index) => {
+          const late = Date.now() > pool.closeAt && !member.paid;
+          const status = member.paid ? `<span class="status">${tr('confirmed')}</span>` : member.pending ? `<span class="status pending">${tr('awaiting')}</span>` : late ? `<span class="status late">${tr('late')}</span>` : `<span class="status pending">${tr('due')}</span>`;
+          const isYou = member.id === state.currentUserId;
+          return `<tr><td><div class="person"><span class="avatar" style="--avatar:${colors[index % colors.length]}">${member.picture ? `<img src="${member.picture}" alt="">` : escapeHtml(initials(member.name))}</span><div><div class="person-name">${escapeHtml(member.name)}${isYou ? `<span class="person-you">${tr('you')}</span>` : ''}</div><div class="person-sub">${tr('memberRole')}</div></div></div></td>${isAdmin ? `<td>${escapeHtml(member.phone || '—')}</td><td>${escapeHtml(member.nationalId || '—')}</td>` : ''}<td>${status}</td><td>${escapeHtml(localizedPayment(member.payment || '—'))}</td>${isAdmin ? `<td>${member.paid ? `<span class="admin-private">${tr('verified')}</span>` : `<button class="text-button" data-confirm="${escapeHtml(member.id)}">${tr('confirm')}</button>`}</td>` : ''}</tr>`;
+        }).join('') || `<tr><td colspan="6" class="empty">${tr('noMembers')}</td></tr>`;
+        $('#contributionAmount').textContent = `${fmt(pool.amount)} / ${state.language === 'fr' ? 'cycle' : 'cycle'}`;
+        $('#frequencyLabel').textContent = localizedFrequency(pool.frequency);
+        $('#recipientLabel').textContent = `${pool.recipients} ${pool.recipients === 1 ? tr('member').toLowerCase() : (state.language === 'fr' ? 'membres' : 'members')}`;
+        const percentage = pool.members.length ? Math.round(pool.members.filter(member => member.paid).length / pool.members.length * 100) : 0;
+        $('#progressText').textContent = `${percentage}%`;
+        $('#progressBar').style.width = `${percentage}%`;
+        $('#countDate').textContent = tr('closes', { date: new Intl.DateTimeFormat(state.language === 'fr' ? 'fr-FR' : 'en', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(pool.closeAt) });
+        $('#cycleStatus').textContent = Date.now() < pool.closeAt ? tr('inProgress') : tr('closed');
+        $('#paymentOptions').innerHTML = paymentMethods[state.country].map(method => {
+          const account = method.value === 'Orange Money' ? state.accounts.orange : method.value === 'MTN MoMo' ? state.accounts.mtn : method.value === 'Cash deposit' ? state.accounts.bank : '';
+          const detail = state.country === 'CM' ? account || tr('notConfigured') : tr('paymentDemo');
+          return `<div class="payment-option"><span class="payment-icon">${method.icon}</span><div><strong>${escapeHtml(localizedPayment(method.value))}</strong><span class="payment-detail">${escapeHtml(detail)}</span></div></div>`;
+        }).join('');
+        for (const [key, selector] of [['orange', '#adminOrange'], ['mtn', '#adminMtn'], ['bank', '#adminBank']]) $(selector).value = state.accounts[key] || '';
+        tick();
+      };
+      const tick = () => {
+        const pool = currentPool(); if (!pool) return;
+        const diff = pool.closeAt - Date.now();
+        if (diff <= 0) { $('#countdown').textContent = tr('closed'); return; }
+        const days = Math.floor(diff / 86400000), hours = Math.floor(diff % 86400000 / 3600000), minutes = Math.floor(diff % 3600000 / 60000);
+        $('#countdown').textContent = `${days}${tr('dayUnit')} ${String(hours).padStart(2, '0')}${tr('hourUnit')} ${String(minutes).padStart(2, '0')}${tr('minuteUnit')}`;
+      };
+      const openModal = (kind) => {
+        const pool = currentPool();
+        const isJoin = kind === 'join', isCreate = kind === 'create';
+        $('#modalTitle').textContent = isJoin ? tr('joinTitle') : isCreate ? tr('createTitle') : tr('makeDepositTitle');
+        $('#modalDescription').textContent = isJoin ? tr('joinDescription') : isCreate ? tr('createDescription') : tr('depositDescription');
+        $('#submitAction').textContent = isJoin ? tr('joinCircle') : isCreate ? tr('createPool') : tr('submitDeposit');
+        const late = !isJoin && !isCreate && Date.now() > pool.closeAt;
+        const fields = $('#formFields');
+        if (isCreate) {
+          fields.innerHTML = `<div class="form-grid"><div class="full"><label class="field-label" for="newAmount">${tr('contributionAmount')}</label><input class="field" id="newAmount" type="number" min="500" step="500" value="5000" required></div><div><label class="field-label" for="newFrequency">${tr('frequencyLabel')}</label><select class="field" id="newFrequency"><option value="7|Weekly">${tr('weekly')}</option><option value="14|Every 2 weeks">${tr('biweekly')}</option><option value="30|Monthly">${tr('monthly')}</option></select></div><div><label class="field-label" for="newRecipients">${tr('payoutRecipients')}</label><select class="field" id="newRecipients"><option value="1">1 ${tr('member').toLowerCase()}</option><option value="2">2 ${state.language === 'fr' ? 'membres' : 'members'}</option></select></div><div class="full"><label class="field-label" for="newCapacity">${tr('memberLimit')}</label><input class="field" id="newCapacity" type="number" min="2" max="100" value="100" required></div></div>`;
+          $('#feeSummary').innerHTML = `<span>${tr('setup')}</span><strong>${tr('noSetupFee')}</strong>`;
+        } else if (isJoin) {
+          fields.innerHTML = `<div class="form-grid"><div class="full"><label class="field-label" for="joinName">${tr('displayName')}</label><input class="field" id="joinName" maxlength="40" required placeholder="${tr('displayNamePlaceholder')}"></div><div class="full"><label class="field-label" for="joinPhoto">${tr('profilePicture')}</label><input class="field" id="joinPhoto" type="file" accept="image/*"></div><div class="full"><label class="field-label" for="joinPhone">${tr('phoneAdminOnly')}</label><input class="field" id="joinPhone" required placeholder="${tr('phonePlaceholder')}" inputmode="tel"></div><div class="full"><label class="field-label" for="joinId">${tr('nationalIdAdminOnly')}</label><input class="field" id="joinId" required placeholder="${tr('idPlaceholder')}"></div></div>`;
+          $('#feeSummary').innerHTML = `<span>${tr('contribution')} · ${escapeHtml(localizedFrequency(pool.frequency))}</span><strong>${fmt(pool.amount)}</strong>`;
+        } else {
+          fields.innerHTML = `<div class="form-grid"><div class="full"><label class="field-label" for="paymentMethod">${tr('choosePayment')}</label><select class="field" id="paymentMethod"><option value="Orange Money">${tr('orangeMoney')}</option><option value="MTN MoMo">${tr('mtnMomo')}</option><option value="Cash deposit">${tr('cashDeposit')}</option></select></div><div class="full"><label class="field-label" for="serviceFee">${tr('adminFee')}</label><select class="field" id="serviceFee"><option value="0">${tr('noFee')}</option><option value="250">250 XAF</option><option value="500" selected>500 XAF</option><option value="1000">1,000 XAF</option><option value="2500">2,500 XAF</option></select></div><div class="full"><label class="field-label" for="paymentRef">${tr('paymentReference')}</label><input class="field" id="paymentRef" maxlength="40" placeholder="${tr('referencePlaceholder')}"></div></div>`;
+                    const methodOptions = paymentMethods[state.country].map(method => `<option value="${escapeHtml(method.value)}">${escapeHtml(localizedPayment(method.value))}</option>`).join('');
+                    fields.innerHTML = `<div class="form-grid"><div class="full"><label class="field-label" for="paymentMethod">${tr('choosePayment')}</label><select class="field" id="paymentMethod">${methodOptions}</select></div><div class="full"><label class="field-label" for="serviceFee">${tr('adminFee')}</label><select class="field" id="serviceFee"><option value="0">${tr('noFee')}</option><option value="250">250 XAF</option><option value="500" selected>500 XAF</option><option value="1000">1,000 XAF</option><option value="2500">2,500 XAF</option></select></div><div class="full"><label class="field-label" for="paymentRef">${tr('paymentReference')}</label><input class="field" id="paymentRef" maxlength="40" placeholder="${tr('referencePlaceholder')}"></div></div>`;
+          $('#feeSummary').innerHTML = `<span>${tr('contribution')}${late ? ` + ${state.language === 'fr' ? 'frais de retard de 3 %' : '3% late fee'}` : ''} + ${state.language === 'fr' ? 'frais admin sélectionnés' : 'selected admin fee'}</span><strong id="totalDue">${fmt(Math.ceil(pool.amount * (late ? 1.03 : 1)) + 500)}</strong>`;
+          $('#serviceFee').addEventListener('change', () => { $('#totalDue').textContent = fmt(Math.ceil(pool.amount * (late ? 1.03 : 1)) + Number($('#serviceFee').value)); });
+        }
+        $('#actionForm').dataset.kind = kind;
+        $('#modalBackdrop').classList.add('open');
+        const first = fields.querySelector('input, select'); if (first) first.focus();
+      };
+      const closeModal = () => $('#modalBackdrop').classList.remove('open');
+      $('#poolCards').addEventListener('click', event => {
+        const card = event.target.closest('[data-pool]'); if (!card) return;
+        state.selectedPool = card.dataset.pool; save(); render();
+      });
+      $('#modeSelect').addEventListener('change', event => { state.mode = event.target.value; save(); render(); });
+        $('#languageSelect').addEventListener('change', event => { state.language = event.target.value; save(); render(); });
+        $('#countrySelect').addEventListener('change', event => { state.country = event.target.value; save(); render(); });
+      $('#joinButton').addEventListener('click', () => openModal('join'));
+      $('#createPoolButton').addEventListener('click', () => openModal('create'));
+      $('#depositButton').addEventListener('click', () => {
+        const me = currentPool().members.find(member => member.id === state.currentUserId);
+        if (!me) return setToast(tr('joinFirst'));
+        if (me.paid) return setToast(tr('alreadyPaid'));
+        openModal('deposit');
+      });
+      $('#memberTableBody').addEventListener('click', event => {
+        const button = event.target.closest('[data-confirm]'); if (!button || state.mode !== 'admin') return;
+        const member = currentPool().members.find(item => item.id === button.dataset.confirm);
+        if (member) { member.paid = true; member.pending = false; if (!member.payment) member.payment = 'Manual confirmation'; save(); render(); setToast(tr('contributionConfirmed')); }
+      });
+      document.querySelectorAll('.account-field').forEach(input => input.addEventListener('change', () => {
+        state.accounts[input.dataset.key] = input.value.trim(); save(); render(); setToast(tr('accountsSaved'));
+      }));
+      $('#actionForm').addEventListener('submit', async event => {
+        event.preventDefault();
+        const kind = event.currentTarget.dataset.kind, pool = currentPool();
+        if (kind === 'join') {
+          if (pool.members.length >= (pool.capacity || 100)) return setToast(tr('fullPool', { count: pool.capacity || 100 }));
+          if (pool.members.some(member => member.id === state.currentUserId)) return setToast(tr('alreadyMember'));
+          const id = `u${Date.now()}`;
+          const pictureFile = $('#joinPhoto').files[0];
+          if (pictureFile && pictureFile.size > 1000000) return setToast(tr('chooseSmallPicture'));
+          const picture = pictureFile ? await readPicture(pictureFile) : '';
+          pool.members.push({ id, name: $('#joinName').value.trim(), phone: $('#joinPhone').value.trim(), nationalId: $('#joinId').value.trim(), picture, paid: false, payment: '' });
+          state.currentUserId = id; save(); closeModal(); render(); setToast(tr('joined'));
+        } else if (kind === 'create') {
+          const amount = Number($('#newAmount').value), [duration, frequency] = $('#newFrequency').value.split('|').map((value, index) => index ? value : Number(value));
+          const capacity = Number($('#newCapacity').value);
+          if (!Number.isFinite(amount) || amount < 500 || capacity < 2 || capacity > 100) return setToast(tr('checkPool'));
+          const id = `${frequency.toLowerCase().replace(/\W+/g, '-')}-${amount}-${Date.now()}`;
+          state.pools.push({ id, amount, frequency, duration, capacity, recipients: Number($('#newRecipients').value), closeAt: Date.now() + duration * 86400000, members: [] });
+          state.selectedPool = id; save(); closeModal(); render(); setToast(tr('poolCreated'));
+        } else {
+          const member = pool.members.find(item => item.id === state.currentUserId);
+          if (!member || member.paid) return setToast(tr('noUnpaid'));
+          member.payment = $('#paymentMethod').value;
+          member.reference = $('#paymentRef').value.trim();
+          member.serviceFee = Number($('#serviceFee').value);
+          member.lateFee = Date.now() > pool.closeAt ? Math.ceil(pool.amount * .03) : 0;
+          member.pending = true;
+          save(); closeModal(); render(); setToast(tr('depositPending'));
+        }
+      });
+      $('#closeModal').addEventListener('click', closeModal);
+      $('#cancelModal').addEventListener('click', closeModal);
+      $('#modalBackdrop').addEventListener('click', event => { if (event.target === $('#modalBackdrop')) closeModal(); });
+      document.addEventListener('keydown', event => { if (event.key === 'Escape') closeModal(); });
+      render(); setInterval(tick, 15000);
+    })();
+  </script>
+</body>
+</html>
