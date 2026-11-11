@@ -1,5 +1,5 @@
 [README.md](https://github.com/user-attachments/files/34667075/README.md)
-# Mboa Circle
+# Mboa Express Savings
 
 A small browser-based prototype for managing rotating savings pools. The interface supports English and French, with payment options that change according to the selected country.
 
